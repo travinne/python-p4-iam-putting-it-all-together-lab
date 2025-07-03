@@ -1,15 +1,13 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
-
 from server.app import app
 from server.models import db, Recipe, User
 
 class TestRecipe:
-    '''Recipe in models.py'''
+    '''Tests for the Recipe model in models.py'''
 
     def test_has_attributes(self):
-        '''has attributes title, instructions, and minutes_to_complete.'''
-
+        '''Recipe has attributes: title, instructions, and minutes_to_complete.'''
         with app.app_context():
             Recipe.query.delete()
             User.query.delete()
@@ -22,7 +20,7 @@ class TestRecipe:
 
             recipe = Recipe(
                 title="Delicious Shed Ham",
-                instructions="Detailed cooking instructions. " * 3,
+                instructions="These are detailed cooking instructions that are long enough to pass the validation check.",
                 minutes_to_complete=60,
                 user_id=user.id
             )
@@ -36,8 +34,7 @@ class TestRecipe:
             assert new_recipe.minutes_to_complete == recipe.minutes_to_complete
 
     def test_requires_title(self):
-        '''requires each record to have a title.'''
-
+        '''Recipe requires each record to have a title.'''
         with app.app_context():
             Recipe.query.delete()
             User.query.delete()
@@ -48,15 +45,18 @@ class TestRecipe:
             db.session.add(user)
             db.session.commit()
 
-            recipe = Recipe(user_id=user.id)
+            recipe = Recipe(
+                instructions="Valid instructions that are long enough to pass validation.",
+                minutes_to_complete=30,
+                user_id=user.id
+            )
 
             with pytest.raises(IntegrityError):
                 db.session.add(recipe)
                 db.session.commit()
 
     def test_requires_50_plus_char_instructions(self):
-        '''raises error if instructions are less than 50 characters.'''
-
+        '''Raises error if instructions are less than 50 characters.'''
         with app.app_context():
             Recipe.query.delete()
             User.query.delete()
@@ -71,6 +71,7 @@ class TestRecipe:
                 recipe = Recipe(
                     title="Short Ham",
                     instructions="Too short!",
+                    minutes_to_complete=15,
                     user_id=user.id
                 )
                 db.session.add(recipe)
