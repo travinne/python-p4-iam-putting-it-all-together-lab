@@ -52,7 +52,7 @@ class CheckSession(Resource):
         if not user_id:
             return {}, 401
 
-        user = User.query.get(user_id)
+        user = db.session.get(User,user_id)
         return {
             'id': user.id,
             'username': user.username,
@@ -84,7 +84,7 @@ class Logout(Resource):
 class RecipeIndex(Resource):
     def get(self):
         user_id = session.get('user_id')
-        user = User.query.get(user_id)
+        user = db.session.get(User,user_id)
         return [
             {
                 'id': recipe.id,
